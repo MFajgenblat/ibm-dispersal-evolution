@@ -1,0 +1,120 @@
+Scenario;SpeciesID;N_patches;E_init;D_init;Description
+1;1;5;0.5;0.001;low regional species diversity - low unevolvable dispersal phenotype
+2;1;5;0.2;0.001;moderate regional species diversity - low unevolvable dispersal phenotype
+2;2;5;0.8;0.001;
+3;1;5;0.2;0.001;high regional species diversity - low unevolvable dispersal phenotype
+3;2;5;0.35;0.001;
+3;3;5;0.5;0.001;
+3;4;5;0.65;0.001;
+3;5;5;0.8;0.001;
+4;1;5;0.5;0.1;low regional species diversity - high unevolvable dispersal phenotype
+5;1;5;0.2;0.1;moderate regional species diversity - high unevolvable dispersal phenotype
+5;2;5;0.8;0.1;
+6;1;5;0.2;0.1;high regional species diversity - high unevolvable dispersal phenotype
+6;2;5;0.35;0.1;
+6;3;5;0.5;0.1;
+6;4;5;0.65;0.1;
+6;5;5;0.8;0.1;
+7;1;5;0.5;EVO;low regional species diversity - evolvable dispersal phenotype
+8;1;5;0.2;EVO;moderate regional species diversity - evolvable dispersal phenotype
+8;2;5;0.8;EVO;
+9;1;5;0.2;EVO;high regional species diversity - evolvable dispersal phenotype
+9;2;5;0.35;EVO;
+9;3;5;0.5;EVO;
+9;4;5;0.65;EVO;
+9;5;5;0.8;EVO;
+10;1;5;0.2;EVO;high regional species diversity - one outer species with evolvable dispersal among poor dispersers
+10;2;5;0.35;0.001;
+10;3;5;0.5;0.001;
+10;4;5;0.65;0.001;
+10;5;5;0.8;0.001;
+11;1;5;0.2;0.001;high regional species diversity - one center species with evolvable dispersal among poor dispersers
+11;2;5;0.35;0.001;
+11;3;5;0.5;EVO;
+11;4;5;0.65;0.001;
+11;5;5;0.8;0.001;
+12;1;5;0.2;EVO;high regional species diversity - one outer species with evolvable dispersal among good dispersers
+12;2;5;0.35;0.1;
+12;3;5;0.5;0.1;
+12;4;5;0.65;0.1;
+12;5;5;0.8;0.1;
+13;1;5;0.2;0.1;high regional species diversity - one center species with evolvable dispersal among good dispersers
+13;2;5;0.35;0.1;
+13;3;5;0.5;EVO;
+13;4;5;0.65;0.1;
+13;5;5;0.8;0.1;
+14;1;5;0.2;0.001;very high regional species diversity - low unevolvable dispersal phenotype
+14;2;5;0.225;0.001;
+14;3;5;0.25;0.001;
+14;4;5;0.275;0.001;
+14;5;5;0.3;0.001;
+14;6;5;0.325;0.001;
+14;7;5;0.35;0.001;
+14;8;5;0.375;0.001;
+14;9;5;0.4;0.001;
+14;10;5;0.425;0.001;
+14;11;5;0.45;0.001;
+14;12;5;0.475;0.001;
+14;13;5;0.5;0.001;
+14;14;5;0.525;0.001;
+14;15;5;0.55;0.001;
+14;16;5;0.575;0.001;
+14;17;5;0.6;0.001;
+14;18;5;0.625;0.001;
+14;19;5;0.65;0.001;
+14;20;5;0.675;0.001;
+14;21;5;0.7;0.001;
+14;22;5;0.725;0.001;
+14;23;5;0.75;0.001;
+14;24;5;0.775;0.001;
+14;25;5;0.8;0.001;
+15;1;25;0.2;0.1;very high regional species diversity - high unevolvable dispersal phenotype
+15;2;25;0.225;0.1;
+15;3;25;0.25;0.1;
+15;4;25;0.275;0.1;
+15;5;25;0.3;0.1;
+15;6;25;0.325;0.1;
+15;7;25;0.35;0.1;
+15;8;25;0.375;0.1;
+15;9;25;0.4;0.1;
+15;10;25;0.425;0.1;
+15;11;25;0.45;0.1;
+15;12;25;0.475;0.1;
+15;13;25;0.5;0.1;
+15;14;25;0.525;0.1;
+15;15;25;0.55;0.1;
+15;16;25;0.575;0.1;
+15;17;25;0.6;0.1;
+15;18;25;0.625;0.1;
+15;19;25;0.65;0.1;
+15;20;25;0.675;0.1;
+15;21;25;0.7;0.1;
+15;22;25;0.725;0.1;
+15;23;25;0.75;0.1;
+15;24;25;0.775;0.1;
+15;25;25;0.8;0.1;
+16;1;25;0.2;EVO;very high regional species diversity - evolvable dispersal phenotype
+16;2;25;0.225;EVO;
+16;3;25;0.25;EVO;
+16;4;25;0.275;EVO;
+16;5;25;0.3;EVO;
+16;6;25;0.325;EVO;
+16;7;25;0.35;EVO;
+16;8;25;0.375;EVO;
+16;9;25;0.4;EVO;
+16;10;25;0.425;EVO;
+16;11;25;0.45;EVO;
+16;12;25;0.475;EVO;
+16;13;25;0.5;EVO;
+16;14;25;0.525;EVO;
+16;15;25;0.55;EVO;
+16;16;25;0.575;EVO;
+16;17;25;0.6;EVO;
+16;18;25;0.625;EVO;
+16;19;25;0.65;EVO;
+16;20;25;0.675;EVO;
+16;21;25;0.7;EVO;
+16;22;25;0.725;EVO;
+16;23;25;0.75;EVO;
+16;24;25;0.775;EVO;
+16;25;25;0.8;EVO;
