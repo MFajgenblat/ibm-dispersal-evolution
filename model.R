@@ -1,21 +1,13 @@
+################################################################################
+# This file defines the individual-based model
+################################################################################
+
 #-------------------------------------------------------------------------------
-# Landscape, metacommunity & genetics settings
+# Community and genetic settings
 #-------------------------------------------------------------------------------
-
-# Number of patches, environmental niche values and species (identical by design)
-N_patches <- N_environments <- N_max_species <- 5
-
-# Environmental values of the patches
-environment <- seq(0.2, 0.8, length.out = N_environments)
-
-# Available species pool configurations
-species_pools <- list(c(3), c(1,5), c(1,2,3,4,5))
-
-# Species that cannot evolve dispersal
-species_fixed_dispphen <- list(c(), c(1,2,3,4,5), c(3), c(1,2,4,5), c(2,3,4,5))
 
 # Size of the haploid set of loci coding the environmental phenotype
-# Identitcal to the size of the haploid set of loci coding the dispersal phenotype
+# Identical to the size of the haploid set of loci coding the dispersal phenotype
 N_loci <- 50
 
 # Number of unique mainland haplotypes per species
@@ -25,7 +17,10 @@ N_mainland_haplotypes <- 100
 N_mainland_genotypes <- 10000
 
 # Duration of a single simulation
-N_generations <- 100
+N_generations <- 2500
+
+# Maximum dispersal probability (dispersal phenotype * D_max = dispersal probability)
+D_max <- 0.1
 
 #-------------------------------------------------------------------------------
 # Fixed model parameters
@@ -38,38 +33,38 @@ K <- 250
 r_max <- 10
 
 # Environmental selection strength
-sigma <- 0.002
+sigma <- 0.01
+#plot(seq(0, 0.8, length.out = 100), exp(-(seq(0, 0.8, length.out = 100))^2/sigma))
 
 # Genetic diversity in mainland population (max = 0.5)
 gamma <- 0.1
 
-# Mutation rate
-mu = 10e-4
-
 # Initial dispersal propensity
-delta_init <- 0.2
+delta_init <- 0.02
+
+#-------------------------------------------------------------------------------
+# Regional species pool settings
+#-------------------------------------------------------------------------------
+
+species_pool_scenarios <- read.csv("species_pool_scenarios.csv", sep=";")
 
 #-------------------------------------------------------------------------------
 # Variable model parameters: default settings
 #-------------------------------------------------------------------------------
 
-# Selected species pool
-species_pool <- 3
-
-# Species that cannot evolve dispersal scenario
-evodisp_scenario <- 1
-
-# Fixed dispersal phenotype for species that cannot evolve dispersal
-delta_fix <- 0.25/5
+species_pool_scenario = 9
 
 # Expected amount of mainland individuals seeded per patch per generation
 lambda <- 1
 
-# Cost of dispersal (probability of additional mortality for dispersing phenotypes)
-chi <- 1
+# Cost of dispersal (probability of mortality during dipsersal event)
+chi <- 0.1
 
 # Probability of complete patch extinction probability per generation
 psi <- 0
+
+# Mutation rate
+mu = 10e-4
 
 #-------------------------------------------------------------------------------
 # Utility functions
@@ -110,40 +105,62 @@ reshuffle_alleles <- function(genotype, rate) {
 # Defining the IBM function
 #-------------------------------------------------------------------------------
 
-run_ibm <- function(species_pool = species_pool,
-                    evodisp_scenario = evodisp_scenario,
-                    delta_fix = delta_fix,
-                    lambda = lambda,
-                    chi = chi,
-                    psi = psi,
+run_ibm <- function(Species_pool_scenario = species_pool_scenario,
+                    Lambda = lambda,
+                    Chi = chi,
+                    Psi = psi,
+                    Mu = mu,
                     replicate_id = 1) {
+  
+  # Number of patches, environmental niche values and species (identical by design)
+  N_patches <- N_environments <- species_pool_scenarios$N_patches[species_pool_scenarios$Scenario == Species_pool_scenario][1]
+  
+  # Environmental values of the patches
+  environment <- seq(0.2, 0.8, length.out = N_environments)
+  
+  # Number of species
+  N_species <- max(species_pool_scenarios$SpeciesID[species_pool_scenarios$Scenario == Species_pool_scenario])
+  
+  # Mainland environmetal phenotypes of the species
+  E_pheno <- species_pool_scenarios$E_init[species_pool_scenarios$Scenario == Species_pool_scenario]
+  
+  # Mainland dispersal phenotypes of the species
+  D_pheno <- species_pool_scenarios$D_init[species_pool_scenarios$Scenario == Species_pool_scenario]
+  
+  # Which species cannot evolve dispersal?
+  fixed_dispersal_species <- which(D_pheno != "EVO")
+  
+  # Fixed dispersal probability of species that cannot evolve dispersal
+  fixed_dispersal <- as.numeric(grep("\\b[0-9]+(\\.[0-9]+)?\\b", D_pheno, value = TRUE)[1])
   
   # MAINLAND SETUP
   
   # Create modal environmental genotypes for each species
-  modal_env_genotypes <- matrix(0, nrow = N_max_species, ncol = N_loci)
-  for (i in 1:N_max_species) {modal_env_genotypes[i,resample(1:N_loci, probabilistic_round(environment[i]*N_loci))] <- 1}
+  modal_env_genotypes <- matrix(0, nrow = N_species, ncol = N_loci)
+  for (i in 1:N_species) {modal_env_genotypes[i,resample(1:N_loci, probabilistic_round(E_pheno[i]*N_loci))] <- 1}
   
   # Create modal dispersal genotypes for each species
-  modal_disp_genotypes <- matrix(0, nrow = N_max_species, ncol = N_loci)
-  for (i in 1:N_max_species) {modal_disp_genotypes[i,resample(1:N_loci, probabilistic_round(delta_init*N_loci))] <- 1}
+  modal_disp_genotypes <- matrix(0, nrow = N_species, ncol = N_loci)
+  for (i in 1:N_species) {modal_disp_genotypes[i,resample(1:N_loci, probabilistic_round(delta_init*N_loci))] <- 1}
   
   # Create haplotype pools for each species
-  mainland_env_haplotypes <- lapply(1:N_max_species, function(i) t(replicate(N_mainland_haplotypes, reshuffle_alleles(modal_env_genotypes[i,], probabilistic_round(gamma*N_loci)))))
-  mainland_disp_haplotypes <- lapply(1:N_max_species, function(i) t(replicate(N_mainland_haplotypes, reshuffle_alleles(modal_disp_genotypes[i,], probabilistic_round(gamma*N_loci)))))
+  mainland_env_haplotypes <- lapply(1:N_species, function(i) t(replicate(N_mainland_haplotypes, reshuffle_alleles(modal_env_genotypes[i,], probabilistic_round(gamma*N_loci)))))
+  mainland_disp_haplotypes <- lapply(1:N_species, function(i) t(replicate(N_mainland_haplotypes, reshuffle_alleles(modal_disp_genotypes[i,], probabilistic_round(gamma*N_loci)))))
   
   # Create the mainland combination by randomly combining two haplotypes per species
-  mainland_individuals <- cbind(Species = rep(1:N_max_species, each = N_mainland_genotypes),
-                                do.call(rbind, lapply(rep(1:N_max_species, each = N_mainland_genotypes), function(i) c(t(mainland_env_haplotypes[[i]][resample(1:N_mainland_haplotypes, 2, replace = T),])))),
-                                do.call(rbind, lapply(rep(1:N_max_species, each = N_mainland_genotypes), function(i) c(t(mainland_disp_haplotypes[[i]][resample(1:N_mainland_haplotypes, 2, replace = T),])))))
+  mainland_individuals <- cbind(Species = rep(1:N_species, each = N_mainland_genotypes),
+                                do.call(rbind, lapply(rep(1:N_species, each = N_mainland_genotypes), function(i) c(t(mainland_env_haplotypes[[i]][resample(1:N_mainland_haplotypes, 2, replace = T),])))),
+                                do.call(rbind, lapply(rep(1:N_species, each = N_mainland_genotypes), function(i) c(t(mainland_disp_haplotypes[[i]][resample(1:N_mainland_haplotypes, 2, replace = T),])))))
   
   # POPULATION DYNAMICS
   
   for (generation in 1:N_generations) {
     
+    #print(generation)
+    
     # Subsetting the current generation, augmented by any mainland individuals
     if (generation == 1) {
-      history <- cbind(Generation = NA, Patch = NA, Species = NA, Environmental_phenotype = NA, dispersal_phenotype = NA)[-1,]
+      history <- cbind(Generation = NA, Patch = NA, Species = NA, Environmental_phenotype = NA, Dispersal_probability = NA)[-1,]
       current_generation <- cbind(Generation = NA, Patch = NA, Species = NA, matrix(NA, ncol = 4*N_loci, nrow = 1))[-1,]
     } else {
       current_generation <- upcoming_generation
@@ -151,7 +168,7 @@ run_ibm <- function(species_pool = species_pool,
     
     # Mainland rain
     current_generation <- rbind(current_generation,
-                                do.call(rbind, lapply(1:N_patches, function(i) cbind(Generation = generation, Patch = i, mainland_individuals[resample(which(mainland_individuals[,1] %in% species_pools[[species_pool]]), rpois(1, lambda), replace = T),,drop = F]))))
+                                do.call(rbind, lapply(1:N_patches, function(i) cbind(Generation = generation, Patch = i, mainland_individuals[resample(1:nrow(mainland_individuals), rpois(1, Lambda), replace = T),,drop = F]))))
     
     
     # If the patches have at least one individual:
@@ -183,54 +200,55 @@ run_ibm <- function(species_pool = species_pool,
                                       recombination_matrix[[2]] * current_generation[partner_2,(4+2*N_loci):(3+3*N_loci)] + (1 - recombination_matrix[[2]]) * current_generation[partner_2,(4+3*N_loci):(3+4*N_loci)])
         
         # Mutation
-        where2mutate <- matrix(rbinom(sum(reproductive_output)*N_loci*4, 1, mu), nrow = sum(reproductive_output), ncol = N_loci*4)
+        where2mutate <- matrix(rbinom(sum(reproductive_output)*N_loci*4, 1, Mu), nrow = sum(reproductive_output), ncol = N_loci*4)
         mutated_genotypes <- (1 - where2mutate) * recombined_genotypes + where2mutate * (1 - recombined_genotypes)
         
         # Dispersal
-        dispersal_phenotypes <- rowMeans(mutated_genotypes[,(1+N_loci*2):(N_loci*4),drop = F])/5
-        dispersal_phenotypes[which(unlist(sapply(1:nrow(current_generation), function(i) rep(current_generation[i,3], reproductive_output[i]), simplify = F)) %in% species_fixed_dispphen[[evodisp_scenario]])] <- rep(delta_fix/5, sum(reproductive_output))
+        dispersal_probabilities <- rowMeans(mutated_genotypes[,(1+N_loci*2):(N_loci*4),drop = F])*D_max
+        dispersal_probabilities[which(unlist(sapply(1:nrow(current_generation), function(i) rep(current_generation[i,3], reproductive_output[i]), simplify = F)) %in% fixed_dispersal_species)] <- fixed_dispersal
         
-        # Compiling the upcomping generation
+        # Compiling the upcomping generation and cost of dispersal proportional to the dispersal phenotype
         natal_patches <- unlist(sapply(1:nrow(current_generation), function(i) rep(current_generation[i,2], reproductive_output[i])))
         upcoming_generation <- cbind(Generation = generation,
-                                     Patch = sapply(1:sum(reproductive_output), function(i) resample(c(natal_patches[i], 1:N_patches), 1, replace = F, prob = c(1 - dispersal_phenotypes[i], dispersal_phenotypes[i]*c(rep(1/N_patches, N_patches))))),
+                                     Patch = sapply(1:sum(reproductive_output), function(i) resample(c(natal_patches[i], 1:N_patches), 1, replace = F, prob = c(1 - dispersal_probabilities[i], dispersal_probabilities[i]*c(rep(1/N_patches, N_patches))))),
                                      Species = unlist(sapply(1:nrow(current_generation), function(i) rep(current_generation[i,3], reproductive_output[i]), simplify = F)),
-                                     mutated_genotypes)[which(rbinom(sum(reproductive_output), 1, chi*dispersal_phenotypes) == 0),,drop = F]
+                                     mutated_genotypes)[which(rbinom(sum(reproductive_output), 1, dispersal_probabilities/D_max*Chi) == 0),,drop = F]
         
         # Patch extinction
-        upcoming_generation <- upcoming_generation[upcoming_generation[,2] %in% which(rbinom(5, 1, rep(psi, 5)) == 0),,drop = F]
+        upcoming_generation <- upcoming_generation[upcoming_generation[,2,drop = F] %in% which(rbinom(N_patches, 1, rep(Psi, N_patches)) == 0),,drop = F]
         
-        # Add new generation to metacommunity history
+        # Add random sample of new generation to metacommunity history
         history <- rbind(history,
                          data.frame(upcoming_generation[,1:3,drop = F],
                                     Environmental_phenotype = rowMeans(upcoming_generation[,4:(3+N_loci*2), drop = F]),
-                                    Dispersal_phenotype = rowMeans(upcoming_generation[,(4+N_loci*2):(3+N_loci*4), drop = F])))
+                                    Dispersal_probability = D_max*rowMeans(upcoming_generation[,(4+N_loci*2):(3+N_loci*4), drop = F]))[resample(1:nrow(upcoming_generation), round(nrow(upcoming_generation)/100)),])
         
-      
-      # If there is no reproductive output:
+        
+        # If there is no reproductive output:
       } else {
         
         upcoming_generation <- cbind(Generation = NA, Patch = NA, Species = NA, matrix(NA, ncol = 4*N_loci, nrow = 1))[-1,]
         
       }
-    
-    # If all patches are empty:
+      
+      # If all patches are empty:
     } else {
       
       upcoming_generation <- cbind(Generation = NA, Patch = NA, Species = NA, matrix(NA, ncol = 4*N_loci, nrow = 1))[-1,]
       
     }
     
+    #print(generation)
+    
   }
   
-  # Compile, randomly sample and return history
-  return(data.frame(species_pool = species_pool,
-                    evodisp_scenario = evodisp_scenario,
-                    delta_fix = delta_fix,
-                    lambda = lambda,
-                    chi = chi,
-                    psi = psi,
+  # Compile and return history
+  return(data.frame(species_pool_scenario = Species_pool_scenario,
+                    lambda = Lambda,
+                    chi = Chi,
+                    psi = Psi,
+                    mu = Mu,
                     replicate_id = replicate_id,
-                    history)[sample(1:nrow(history), round(nrow(history)/100)),])
+                    history))
   
 }
