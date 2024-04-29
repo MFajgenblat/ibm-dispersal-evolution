@@ -21,7 +21,7 @@ results_contrasting_scenarios <- read.csv("results_contrasting_scenarios.csv", s
 results_general_scenarios %>%
   filter(evodisp_scenario == 1,
          delta_fix == 0.05,
-         Generation > 1900) %>%
+         Generation > 2250) %>%
   mutate(species_number = case_when(species_pool == 1 ~ 1,
                                     species_pool == 2 ~ 2,
                                     species_pool == 3 ~ 5),
@@ -67,7 +67,7 @@ ggsave("Figure_1.png", width = 16, height = 7, units = "cm", dpi = 600)
 #-------------------------------------------------------------------------------
 
 MI <- results_general_scenarios %>%
-  filter(Generation > 1000) %>%
+  filter(Generation >= 1251) %>%
   group_by(lambda, chi, psi, replicate_id, evodisp_scenario, species_pool, delta_fix) %>%
   summarise(MI = 1.25*mean((Patch != Species) * (1 - abs(environment[Patch] - Environmental_phenotype)))) %>%
   mutate(species_number = case_when(species_pool == 1 ~ 1,
@@ -146,7 +146,7 @@ ggsave("Figure_2.pdf", width = 16, height = 12, units = "cm", dpi = 600)
 #-------------------------------------------------------------------------------
 
 results_contrasting_scenarios %>%
-  filter(Generation >= 1000) %>%
+  filter(Generation >= 1251) %>%
   group_by(replicate_id, lambda, psi, evodisp_scenario, delta_fix, Species) %>%
   summarize(MI = mean(Dispersal_phenotype)/5) %>%
   mutate(psi = factor(case_when(psi == 0 ~ "No patch\nextinction",
@@ -200,7 +200,7 @@ ggsave("Figure_3.pdf", width = 16, height = 16, units = "cm", dpi = 600)
 #-------------------------------------------------------------------------------
 
 results_contrasting_scenarios %>%
-  filter(Generation >= 1000) %>%
+  filter(Generation >= 1251) %>%
   group_by(replicate_id, lambda, psi, evodisp_scenario, delta_fix, Species) %>%
   summarize(MI = 1.25*mean((Patch != Species) * (1 - abs(environment[Patch] - Environmental_phenotype)))) %>%
   mutate(psi = factor(case_when(psi == 0 ~ "No patch\nextinction",
@@ -249,7 +249,7 @@ ggsave("Figure_4.pdf", width = 16, height = 16, units = "cm", dpi = 600)
 #-------------------------------------------------------------------------------
 
 results_contrasting_scenarios %>%
-  filter(Generation >= 1000) %>%
+  filter(Generation >= 1251) %>%
   group_by(replicate_id, lambda, psi, evodisp_scenario, delta_fix, Species) %>%
   summarize(MI = n()/10) %>%
   mutate(psi = factor(case_when(psi == 0 ~ "No patch\nextinction",
